@@ -1,9 +1,13 @@
-lternative: Use a shell command
+#!/bin/bash
 
-Instead of modifying your script, you can run two commands in sequence:
+set -e
+# Step 1: Run data collection + processing
 
-# Step 1: run your data pipeline
-python src/main.py --query "Antimicrobial resistance AND novel antibiotics" --data_collection True
+if [ "$DATA_COLLECTION" = "True" ]; then
+    python src/main.py --query "$QUERY" --retmax "$RETMAX" --data_collection
+else
+    python src/main.py --query "$QUERY" --retmax "$RETMAX"
+fi
 
-# Step 2: launch Streamlit
-streamlit run src/api/app.py
+# Step 2: Launch Streamlit interface
+streamlit run src/api/app.py --server.port ${STREAMLIT_PORT:-8501} --server.address 0.0.0.0

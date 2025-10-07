@@ -185,14 +185,19 @@ Controlled vocabulary for assay results:
 ## 5. Pipeline Execution
 
 ### 5.1 Execution Script: `run_pipeline.sh`
-
 ```bash
 #!/bin/bash
-# Step 1: Data collection and processing
-python src/main.py --query "Antimicrobial resistance AND novel antibiotics" --data_collection True
+set -e
 
-# Step 2: Launch query interface
-streamlit run src/api/app.py
+# Step 1: Run data collection + processing
+if [ "$DATA_COLLECTION" = "True" ]; then
+    python src/main.py --query "$QUERY" --retmax "$RETMAX" --data_collection
+else
+    python src/main.py --query "$QUERY" --retmax "$RETMAX"
+fi
+
+# Step 2: Launch Streamlit interface
+streamlit run src/api/app.py --server.port ${STREAMLIT_PORT:-8501} --server.address 0.0.0.0
 ```
 
 ### 5.2 Main Script: `main.py`
@@ -253,7 +258,23 @@ streamlit run src/api/app.py
 
 ---
 
-## 8. References
+## 8. Deployment
+
+### 8.1. Using Docker Compose
+* Build and launch the services:
+docker-compose up --build
+* Environment variables are read from the .env file
+* The pipeline automatically runs run_pipeline.sh inside the container, performing:
+
+Data collection (if enabled)
+Launching the Streamlit web interface
+
+### 8.2. Manual Deployment
+* Start PostgreSQL and ensure database credentials match .env.
+* Run the pipeline locally:
+./run_pipeline.sh
+
+## 9. References
 
 * [PubMed API](https://pubmed.ncbi.nlm.nih.gov/)
 * [PubChemPy Documentation](https://docs.pubchempy.org/en/latest/)

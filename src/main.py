@@ -37,8 +37,6 @@ if __name__ == "__main__":
             retmax=retmax,
             output_dir=article_dir
         )
-    logger.info("Starting article processing pipeline")
-
     session = boto3.Session(
         aws_access_key_id=settings.AWS_KEY,
         aws_secret_access_key=settings.AWS_SECRET,

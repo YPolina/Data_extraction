@@ -18,12 +18,30 @@ logger = logging.getLogger("pubchem_db")
 
 class Queries:
     @staticmethod
-    def create_tables():
+    def create_tables() -> None:
+        """
+        Drop and recreate all database tables.
+
+        Args:
+            None
+
+        Returns:
+            None
+        """
         Base.metadata.drop_all(sync_engine)
         Base.metadata.create_all(sync_engine)
 
     @staticmethod
     def insert_article(article: ArticleRecord) -> int:
+        """
+        Insert an article record into the database.
+
+        Args:
+            article (ArticleRecord): Dictionary-like object containing article metadata.
+
+        Returns:
+            int: ID of the inserted or existing article.
+        """
         with session_local() as session:
             try:
                 insert_article = insert(Articles).values(article).returning(Articles.id)
@@ -39,8 +57,18 @@ class Queries:
                 return article_id
 
     @staticmethod
-    def insert_compound(compound: CompoundInfo, article_id: int, context: str = None) -> int:
-        """Insert compound and link to article with context."""
+    def insert_compound(compound: CompoundInfo, article_id: int, context: str | None = None) -> int:
+        """
+        Insert a compound into the database and link it to an article.
+
+        Args:
+            compound (CompoundInfo): Dictionary-like object containing compound metadata.
+            article_id (int): ID of the related article.
+            context (str | None): Optional context describing the relationship.
+
+        Returns:
+            int: ID of the inserted or existing compound.
+        """
         with session_local() as session:
             # Insert compound
             try:
@@ -67,7 +95,17 @@ class Queries:
             return compound_id
 
     @staticmethod
-    def insert_assay(assay: Assay, compound_id: int):
+    def insert_assay(assay: Assay, compound_id: int) -> None:
+        """
+        Insert an assay record into the database and link it to a compound.
+
+        Args:
+            assay (Assay): Assay dataclass instance containing assay details.
+            compound_id (int): ID of the related compound.
+
+        Returns:
+            None
+        """
         with session_local() as session:
             try:
                 data = asdict(assay)

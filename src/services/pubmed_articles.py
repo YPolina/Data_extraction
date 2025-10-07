@@ -6,7 +6,18 @@ from Bio import Entrez
 from src.utils.file_io import recreate_dir
 
 
-def search_pubmed(query, retmax=10, free_full_text=True):
+def search_pubmed(query: str, retmax: int = 10, free_full_text: bool = True) -> list[str]:
+    """
+    Search PubMed for articles matching a query.
+
+    Args:
+        query (str): Search term for PubMed.
+        retmax (int): Maximum number of results to return.
+        free_full_text (bool): Whether to restrict results to free full text.
+
+    Returns:
+        List[str]: A list of PubMed IDs (PMIDs).
+    """
     if free_full_text:
         query = f"{query} AND free full text[filter]"
     handle = Entrez.esearch(db="pubmed", term=query, retmax=retmax)
@@ -14,7 +25,17 @@ def search_pubmed(query, retmax=10, free_full_text=True):
     return record["IdList"]
 
 
-def fetch_metadata(pmids):
+def fetch_metadata(pmids: list[str]) -> list[dict]:
+    """
+    Fetch metadata for a list of PubMed IDs.
+
+    Args:
+        pmids (List[str]): List of PubMed IDs.
+
+    Returns:
+        List[dict]: A list of dictionaries containing article metadata
+                    (PMID, Title, Abstract, Journal, Authors, DOI).
+    """
     handle = Entrez.efetch(db="pubmed", id=",".join(pmids), rettype="xml")
     records = Entrez.read(handle)
     articles = []
@@ -42,7 +63,17 @@ def fetch_metadata(pmids):
     return articles
 
 
-def get_unpaywall_pdf(doi, email):
+def get_unpaywall_pdf(doi: str | None, email: str) -> str | None:
+    """
+    Retrieve the PDF URL of an article from Unpaywall using its DOI.
+
+    Args:
+        doi (str | None): Digital Object Identifier of the article.
+        email (str): Email address required by Unpaywall API.
+
+    Returns:
+        str | None: Direct URL to the PDF if available, otherwise None.
+    """
     if not doi:
         return None
     url = f"https://api.unpaywall.org/v2/{doi}?email={email}"
@@ -57,7 +88,18 @@ def get_unpaywall_pdf(doi, email):
     return None
 
 
-def download_pdf(pdf_url, pmid, output_dir):
+def download_pdf(pdf_url: str | None, pmid: str, output_dir: str) -> bool:
+    """
+    Download a PDF file from a given URL and save it locally.
+
+    Args:
+        pdf_url (str | None): URL of the PDF file.
+        pmid (str): PubMed ID used as the filename.
+        output_dir (str): Directory where the PDF will be saved.
+
+    Returns:
+        bool: True if the PDF was successfully downloaded, False otherwise.
+    """
     if not pdf_url:
         return False
     try:
@@ -73,7 +115,19 @@ def download_pdf(pdf_url, pmid, output_dir):
     return False
 
 
-def article_collection(query, email, output_dir = './data/raw_data', retmax=20):
+def article_collection(query: str, email: str, output_dir: str = './data/raw_data', retmax: int = 20) -> None:
+    """
+    Collect articles from PubMed, download available PDFs, and save metadata.
+
+    Args:
+        query (str): Search term for PubMed.
+        email (str): Email address required by Entrez and Unpaywall APIs.
+        output_dir (str): Directory where PDFs and metadata will be stored.
+        retmax (int): Maximum number of PubMed results to retrieve.
+
+    Returns:
+        None: Saves downloaded PDFs and metadata.json to the output directory.
+    """
     Entrez.email = email
     pmids = search_pubmed(query, retmax=retmax)
     articles = fetch_metadata(pmids)

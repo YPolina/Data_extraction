@@ -21,8 +21,16 @@ def extract_json_block(raw_text: str) -> str:
         return match.group(0)
     return raw_text
 
+def fetch_assays_for_cid(cid: int) -> list[Assay]:
+    """
+    Fetch assay summary data for a given PubChem Compound ID (CID).
 
-def fetch_assays_for_cid(cid: int) -> List[Assay]:
+    Args:
+        cid (int): PubChem Compound ID.
+
+    Returns:
+        List[Assay]: A list of Assay objects containing assay details.
+    """
     url = f"https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/{cid}/assaysummary/JSON"
     r = requests.get(url, timeout=30)
     r.raise_for_status()
@@ -78,7 +86,17 @@ def fetch_assays_for_cid(cid: int) -> List[Assay]:
     return assays
 
 
+
 def is_pubchem_candidate(name: str) -> bool:
+    """
+    Determine if a given name is a valid PubChem candidate.
+
+    Args:
+        name (str): Name of the compound.
+
+    Returns:
+        bool: True if the name is a valid candidate, False otherwise.
+    """
     n = name.strip()
     # Exclude biologics by suffix
     if any(n.lower().endswith(suf) for suf in BIOLOGIC_SUFFIXES):
